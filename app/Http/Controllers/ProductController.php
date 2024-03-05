@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 // use auth;
+use App\Models\User;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,16 @@ use Illuminate\Support\Facades\Auth as FacadesAuth;
 
 class ProductController extends Controller
 {
+      public function __construct(){
+          $this->middleware('auth');
+      }
+
+  public function getProductByUser($id){
+      $user = User::find($id);
+      $products = $user->products;
+      return view('product.prodUser', compact('products', 'user'));
+  }
+
     /**
     * Display a listing of the resource.
     */
@@ -32,15 +43,22 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
-        Product::create([
-            'name' => $request->input('name'),
-            'body' => $request->input('body'),
-            'price' => $request->input ('price'),
-            'img' => $request->has('img') ? $request->file('img')->store('public_product') : '/img/jeeg.png',
-            'user_id' => auth()->user()->id,
-        ]);
+        // Product::create([
+        //     'name' => $request->input('name'),
+        //     'body' => $request->input('body'),
+        //     'price' => $request->input ('price'),
+        //     'img' => $request->has('img') ? $request->file('img')->store('public/products') : '/img/jeeg.png',
+        //     'user_id' => auth()->user()->id,
+        // ]);
         
-        Auth::user()->products()->create($request->all());
+        Auth::user()->products()->create(
+        [    
+             'name' => $request->input('name'),
+             'body' => $request->input('body'),   
+             'price' => $request->input ('price'),
+             'img' => $request->has('img') ? $request->file('img')->store('public/products') : '/img/jeeg.png',   
+        ]
+    );
         
         return redirect(route('home'))->with('message', 'Articolo Creato');
     }
@@ -50,7 +68,7 @@ class ProductController extends Controller
     */
     public function show(Product $product)
     {
-        //
+        return view('product.show', compact('product'));
     }
     
     /**
